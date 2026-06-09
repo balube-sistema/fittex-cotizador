@@ -645,7 +645,7 @@ var PRODS = [
 {cod:"TA35",cat:"Plate-loaded TA",nom:"Hammer Hombro",p:2049.61},
 {cod:"TA40",cat:"Plate-loaded TA",nom:"Hammer Gluteos",p:2049.61}
 ];
-var PIN = "1234";
+var PIN = "1234"; // Se sobreescribe con el valor de Google Sheets al cargar
 var pinBuf = "";
 var modo = "vend";
 var iva = 21;
@@ -654,10 +654,9 @@ var catAb = false;
 var pnum = Math.floor(Math.random()*900+100);
 var lastC = null;
 
-// Limpiar localStorage para resetear PIN a 1234 en esta version
-try { localStorage.removeItem("fx_pin"); } catch(e){}
+// PIN se carga desde Google Sheets en cargarStock()
 
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHu55bttNg52jSvhqPym-oQGs2tOczMqIX71o0k8--mgaPDFXhW_D0__PdP0EM6JYKBw/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQiialKjMYzuzFRFlxWT8T16jwZMqyv74ODGmbR217c7ubvD7hHZztpQRtLpBE_oWl_g/exec";
 var stockConectado = false;
 
 function cargarStock() {
@@ -668,6 +667,8 @@ function cargarStock() {
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(d.ok && d.productos){
+        // Cargar PIN desde Sheets
+        if(d.pin && /^[0-9]{4}$/.test(d.pin)) { PIN = d.pin; }
         d.productos.forEach(function(sp){
           for(var i=0;i<PRODS.length;i++){
             if(PRODS[i].cod===sp.cod){
@@ -851,16 +852,35 @@ function cambiarPin() {
   var msg = document.getElementById("pinChgMsg");
   msg.style.display = "block";
   if(a.length === 0) { msg.textContent = "Ingresa el PIN actual"; msg.style.color="#c62828"; return; }
-  if(a !== PIN) { msg.textContent = "PIN actual incorrecto (el inicial es 1234)"; msg.style.color="#c62828"; return; }
+  if(a !== PIN) { msg.textContent = "PIN actual incorrecto"; msg.style.color="#c62828"; return; }
   if(n.length === 0) { msg.textContent = "Ingresa el PIN nuevo"; msg.style.color="#c62828"; return; }
   if(!/^[0-9]{4}$/.test(n)) { msg.textContent = "El PIN nuevo debe tener exactamente 4 numeros"; msg.style.color="#c62828"; return; }
   if(n === a) { msg.textContent = "El PIN nuevo debe ser diferente al actual"; msg.style.color="#c62828"; return; }
-  PIN = n;
-  try { localStorage.setItem("fx_pin", PIN); } catch(e){}
-  msg.textContent = "PIN cambiado a " + PIN + " - Guardado!";
-  msg.style.color = "#2e7d32";
-  document.getElementById("pAct").value = "";
-  document.getElementById("pNuv").value = "";
+  if(!stockConectado) { msg.textContent = "Sin conexion a Sheets. Conecta primero el stock."; msg.style.color="#c62828"; return; }
+  msg.textContent = "Guardando PIN...";
+  msg.style.color = "#888";
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ accion:"cambiarPin", pinActual:a, pinNuevo:n })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.ok){
+      PIN = n;
+      msg.textContent = "PIN cambiado correctamente. Funciona en todos los dispositivos.";
+      msg.style.color = "#2e7d32";
+      document.getElementById("pAct").value = "";
+      document.getElementById("pNuv").value = "";
+    } else {
+      msg.textContent = "Error: " + (d.error || "No se pudo guardar");
+      msg.style.color = "#c62828";
+    }
+  })
+  .catch(function(){
+    msg.textContent = "Error de conexion. Verifica tu internet.";
+    msg.style.color = "#c62828";
+  });
 }
 
 // ── IVA ──
