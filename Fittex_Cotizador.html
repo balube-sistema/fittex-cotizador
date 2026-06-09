@@ -862,10 +862,8 @@ function cambiarPin() {
   if(!stockConectado) { msg.textContent = "Sin conexion a Sheets. Conecta primero el stock."; msg.style.color="#c62828"; return; }
   msg.textContent = "Guardando PIN...";
   msg.style.color = "#888";
-  fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ accion:"cambiarPin", pinActual:a, pinNuevo:n })
+  fetch(SCRIPT_URL + "?accion=cambiarPin&pinActual=" + encodeURIComponent(a) + "&pinNuevo=" + encodeURIComponent(n),{
+    method:"GET"
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
