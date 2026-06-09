@@ -168,6 +168,9 @@ table.pt tr:nth-child(even){background:#fafafa}
       <button id="ib0" onclick="setIva(0)" style="flex:1;padding:8px 4px;border:2px solid #ddd;border-radius:10px;background:#f8f8f8;color:#555;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit">0%<br><small style="font-weight:400">Sin IVA</small></button>
     </div>
     <div id="ivaNota" style="font-size:11px;color:#999;margin-bottom:12px">IVA 21% &mdash; r&#233;gimen general</div>
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#128279; Google Sheets</div>
+    <button id="btnStock" onclick="cargarStock()" style="width:100%;padding:9px;background:#1F4E79;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:6px">Conectar con Google Sheets</button>
+    <div id="stockMsg" style="font-size:12px;color:#888;margin-bottom:10px"></div>
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#128273; Cambiar PIN</div>
     <div style="display:flex;gap:8px;align-items:flex-end">
       <div style="flex:1"><label>PIN actual</label><input type="password" id="pAct" maxlength="4" placeholder="&bull;&bull;&bull;&bull;" inputmode="numeric" style="letter-spacing:6px"></div>
@@ -1133,6 +1136,8 @@ document.addEventListener("click",function(e){
 });
 document.getElementById("iMon").addEventListener("change",renderSel);
 renderSel();
+// Auto-conectar con Google Sheets al cargar
+cargarStock();
 
 // ── FINANCIACIÓN ──
 var finCuotas = 1;
